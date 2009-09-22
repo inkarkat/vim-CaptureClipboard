@@ -1,6 +1,40 @@
 " CaptureClipboard.vim: Append system clipboard changes to current buffer. 
 "
-" Maintainer:	Marian Csontos
+" DESCRIPTION:
+" USAGE:
+":[line]CaptureClipboard[!] [{delimiter}]
+"			Monitors the clipboard for changes and inserts any
+"			change of clipboard contents into the current buffer (in
+"			new lines, optionally delimited by {delimiter}). 
+"			If [!] is given, changes are prepended, reverting the
+"			insertion order. Normally, changes are appended after
+"			the current line or given [line].
+"			Use :$CaptureClipboard to append at the end of the
+"			current buffer. 
+"			Use :CaptureClipboard "" to insert an empty line between
+"			captures. 
+"			To stop, press <CTRL-C> or copy "EOF". 
+"
+" INSTALLATION:
+"   Put the script into your user or system Vim plugin directory (e.g.
+"   ~/.vim/plugin). 
+
+" DEPENDENCIES:
+"   - Requires Vim 7.0 or higher. 
+
+" CONFIGURATION:
+" INTEGRATION:
+" LIMITATIONS:
+" ASSUMPTIONS:
+" KNOWN PROBLEMS:
+" TODO:
+"
+" Copyright: (C) 2009 by Ingo Karkat
+"   The VIM LICENSE applies to this script; see ':help copyright'. 
+"
+" Original Autor: Marian Csontos
+" Maintainer:	Ingo Karkat <ingo@karkat.de> 
+"
 " REVISION	DATE		REMARKS 
 "	002	23-Sep-2009	Renamed from TrackClipboard to CaptureClipboard. 
 "				ENH: Directly updating the window after each
@@ -18,20 +52,22 @@
 "				ENH: Checking for 'nomodifiable' buffer. 
 "				ENH: Progress and end messages list number of
 "				captures. 
+"				ENH: Allowing empty line delimiter by passing in
+"				'' or "". 
 "	001	26-Oct-2006	file creation from vimtip #1370
 
-" Avoid installing twice or when in compatible mode
-if exists('g:loaded_CaptureClipboard')
+" Avoid installing twice or when in unsupported Vim version. 
+if exists('g:loaded_CaptureClipboard') || (v:version < 700)
     finish
 endif
 let g:loaded_CaptureClipboard = 1
 
 function! s:Message( ... )
-    echo 'Capturing clipboard changes ' . (a:0 ? '(' . a:1 . ') ' : '') . 'to current buffer. To stop, press <CTRL-C> or copy "EOF". '
+    echo printf('Capturing clipboard changes %sto current buffer. To stop, press <CTRL-C> or copy "EOF". ', (a:0 ? '(' . a:1 . ') ' : ''))
 endfunction
 function! s:EndMessage( count )
     redraw
-    echo 'Captured ' . (a:count > 0 ? a:count : 'no') . ' clipboard changes. '
+    echo printf('Captured %s clipboard changes. ', (a:count > 0 ? a:count : 'no'))
 endfunction
 
 function! s:CaptureClipboard( bang, count, ... )
@@ -49,7 +85,9 @@ function! s:CaptureClipboard( bang, count, ... )
 	execute a:count
     endif
 
-    let l:delimiter = (a:0 ? a:1 : '')
+    if a:0
+	let l:delimiter = (a:1 ==# "''" || a:1 ==# '""' ? '' : a:1)
+    endif
     call s:Message()
     let l:captureCount = 0
 
@@ -63,7 +101,7 @@ function! s:CaptureClipboard( bang, count, ... )
     while @* !=# 'EOF'
 	if l:temp !=# @*
 	    let l:temp = @*
-	    if ! empty( l:delimiter )
+	    if exists('l:delimiter')
 		execute 'put' . a:bang '=l:delimiter'
 	    endif
 	    execute 'put' . a:bang '=l:temp'
