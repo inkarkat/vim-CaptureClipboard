@@ -13,7 +13,12 @@
 "			current buffer. 
 "			Use :CaptureClipboard "" to insert an empty line between
 "			captures. 
+"			Use :0CaptureClipboard to capture everything to the same
+"			(current) line, without inserting newline characters. 
 "			To stop, press <CTRL-C> or copy "EOF". 
+"
+"			{delimiter} is evaluated as an expression if it is
+"			(single- or double-)quoted, or contains backslashes. 
 "
 " INSTALLATION:
 "   Put the script into your user or system Vim plugin directory (e.g.
@@ -53,7 +58,10 @@
 "				ENH: Progress and end messages list number of
 "				captures. 
 "				ENH: Allowing empty line delimiter by passing in
-"				'' or "". 
+"				'' or "". Evaluating quoted arguments to allow
+"				whitespace and other special stuff in delimiter. 
+"				ENH: Insertion without newlines, all in one
+"				line. 
 "	001	26-Oct-2006	file creation from vimtip #1370
 
 " Avoid installing twice or when in unsupported Vim version. 
@@ -70,7 +78,30 @@ function! s:EndMessage( count )
     echo printf('Captured %s clipboard changes. ', (a:count > 0 ? a:count : 'no'))
 endfunction
 
-function! s:CaptureClipboard( bang, count, ... )
+function! s:GetDelimiter( argument )
+    try
+	if a:argument =~# '^\([''"]\).*\1$' 
+	    " The argument is quotes, evaluate it. 
+	    execute 'let l:delimiter =' a:argument
+	elseif a:argument =~# '\\' 
+	    " The argument contains escape characters, evaluate them. 
+	    execute 'let l:delimiter = "' . a:argument . '"'
+	else
+	    let l:delimiter = a:argument
+	endif
+    catch /^Vim\%((\a\+)\)\=:E/
+	let l:delimiter = a:argument
+    endtry
+    return l:delimiter
+endfunction
+function! s:Insert( text, isPrepend, isSameLine )
+    if a:isSameLine
+	execute "normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
+    else
+	execute 'put' . (a:isPrepend ? '!' : '') '=a:text'
+    endif
+endfunction
+function! s:CaptureClipboard( isPrepend, count, ... )
     if ! &l:modifiable
 	let v:errmsg = "E21: Cannot make changes, 'modifiable' is off"
 	echohl ErrorMsg
@@ -79,6 +110,8 @@ function! s:CaptureClipboard( bang, count, ... )
 	return
     endif
 
+    let l:isSameLine = (a:count == 0)
+
     if a:count > 0
 	" Go to specified line number. (Will probably mostly used with
 	" :$CaptureClipboard to append to the end of the buffer.) 
@@ -86,8 +119,9 @@ function! s:CaptureClipboard( bang, count, ... )
     endif
 
     if a:0
-	let l:delimiter = (a:1 ==# "''" || a:1 ==# '""' ? '' : a:1)
+	let l:delimiter = s:GetDelimiter(a:1)
     endif
+
     call s:Message()
     let l:captureCount = 0
 
@@ -102,9 +136,9 @@ function! s:CaptureClipboard( bang, count, ... )
 	if l:temp !=# @*
 	    let l:temp = @*
 	    if exists('l:delimiter')
-		execute 'put' . a:bang '=l:delimiter'
+		call s:Insert(l:delimiter, a:isPrepend, l:isSameLine)
 	    endif
-	    execute 'put' . a:bang '=l:temp'
+	    call s:Insert(l:temp, a:isPrepend, l:isSameLine)
 	    let l:captureCount += 1
 
 	    silent! write
@@ -118,5 +152,5 @@ function! s:CaptureClipboard( bang, count, ... )
     call s:EndMessage(l:captureCount)
 endfunction 
 
-command! -bang -range=-1 -nargs=? CaptureClipboard call <SID>CaptureClipboard('<bang>', <count>, <f-args>)
+command! -bang -range=-1 -nargs=? CaptureClipboard call <SID>CaptureClipboard(<bang>0, <count>, <f-args>)
 
