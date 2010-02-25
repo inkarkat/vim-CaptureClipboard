@@ -34,13 +34,18 @@
 " KNOWN PROBLEMS:
 " TODO:
 "
-" Copyright: (C) 2009 by Ingo Karkat
+" Copyright: (C) 2010 by Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'. 
 "
 " Original Autor: Marian Csontos
 " Maintainer:	Ingo Karkat <ingo@karkat.de> 
 "
 " REVISION	DATE		REMARKS 
+"	003	24-Feb-2010	ENH: Showing capture status in 'titlestring' to
+"				indicate the blocking polling mode and also any
+"				successful capture even when Vim is minimized or
+"				the messages are otherwise obscured by another
+"				window. 
 "	002	23-Sep-2009	Renamed from TrackClipboard to CaptureClipboard. 
 "				ENH: Directly updating the window after each
 "				capture, not every 5s. 
@@ -71,11 +76,38 @@ endif
 let g:loaded_CaptureClipboard = 1
 
 function! s:Message( ... )
+    if &title
+	if ! a:0
+	    " Initial invocation: Save original title and set up autocmd to
+	    " restore it in case the capturing is not stopped via "EOF", but by
+	    " aborting the command. 
+	    let s:save_titlestring = &titlestring
+	    augroup CaptureClipboard
+		au!
+		" Note: The CursorMoved event is triggered immediately after a
+		" CTRL-C if text has been inserted; the other events are not
+		" triggered inside the loop. If no text has been captured, we
+		" try to restore the title when the cursor moves or the window
+		" changes. 
+		au CursorHold,CursorMoved,WinLeave * let &titlestring = s:save_titlestring | autocmd! CaptureClipboard
+	    augroup END
+	endif
+
+	let &titlestring = (a:0 ? a:1 . ' clips...' : 'Capturing...') . ' - %{v:servername}'
+	redraw  " This is necessary to update the title. 
+    endif
+
     echo printf('Capturing clipboard changes %sto current buffer. To stop, press <CTRL-C> or copy "EOF". ', (a:0 ? '(' . a:1 . ') ' : ''))
 endfunction
 function! s:EndMessage( count )
     redraw
     echo printf('Captured %s clipboard changes. ', (a:count > 0 ? a:count : 'no'))
+
+    if &title
+	autocmd! CaptureClipboard
+	let &titlestring = s:save_titlestring
+	unlet s:save_titlestring
+    endif
 endfunction
 
 function! s:GetDelimiter( argument )
