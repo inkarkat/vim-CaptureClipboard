@@ -41,6 +41,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de> 
 "
 " REVISION	DATE		REMARKS 
+"	004	26-Feb-2010	Now using correct plural for the title message. 
 "	003	24-Feb-2010	ENH: Showing capture status in 'titlestring' to
 "				indicate the blocking polling mode and also any
 "				successful capture even when Vim is minimized or
@@ -93,7 +94,7 @@ function! s:Message( ... )
 	    augroup END
 	endif
 
-	let &titlestring = (a:0 ? a:1 . ' clips...' : 'Capturing...') . ' - %{v:servername}'
+	let &titlestring = (a:0 ? a:1 . printf(' clip%s...', (a:1 == 1 ? '' : 's')) : 'Capturing...') . ' - %{v:servername}'
 	redraw  " This is necessary to update the title. 
     endif
 
