@@ -2,23 +2,26 @@
 "
 " DESCRIPTION:
 " USAGE:
-":[line]CaptureClipboard[!] [{delimiter}]
+":[count]CaptureClipboard[!] [{delimiter}]
 "			Monitors the clipboard for changes and inserts any
 "			change of clipboard contents into the current buffer (in
 "			new lines, optionally delimited by {delimiter}). 
+"			To stop, press <CTRL-C> or copy "EOF". If [count] is
+"			given, the capture stops after [count] captures. 
 "			If [!] is given, changes are prepended, reverting the
-"			insertion order. Normally, changes are appended after
-"			the current line or given [line].
-"			Use :$CaptureClipboard to append at the end of the
+"			insertion order. Normally, changes are appended to the
+"			current or given [line].
+"			Use :$|CaptureClipboard to append at the end of the
 "			current buffer. 
-"			Use :CaptureClipboard "" to insert an empty line between
-"			captures. 
-"			Use :0CaptureClipboard to capture everything to the same
-"			(current) line, without inserting newline characters. 
-"			To stop, press <CTRL-C> or copy "EOF". 
 "
 "			{delimiter} is evaluated as an expression if it is
 "			(single- or double-)quoted, or contains backslashes. 
+"			The default {delimiter} is "\n"; each capture is placed
+"			on a new line. Use '' to place everything next to each
+"			other, ' ' to put a space character in between, "\n--\n"
+"			to insert a -- separator line between captures. When
+"			{delimiter} contains a newline character, the first
+"			capture will already start on a new line. 
 "
 " INSTALLATION:
 "   Put the script into your user or system Vim plugin directory (e.g.
@@ -127,11 +130,13 @@ function! s:GetDelimiter( argument )
     endtry
     return l:delimiter
 endfunction
-function! s:Insert( text, isPrepend, isSameLine )
-    if a:isSameLine
-	execute "normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
+function! s:Insert( text, delimiter, isPrepend )
+    let l:insertText = (a:isPrepend ? a:text . a:delimiter : a:delimiter . a:text)
+    if l:insertText =~# (a:isPrepend ? '\n$' : '^\n')
+	let l:insertText = (a:isPrepend ? strpart(l:insertText, 0, strlen(l:insertText) - 1) : strpart(l:insertText, 1))
+	execute 'put' . (a:isPrepend ? '!' : '') '=l:insertText'
     else
-	execute 'put' . (a:isPrepend ? '!' : '') '=a:text'
+	execute "normal! \"=l:insertText\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
     endif
 endfunction
 function! s:CaptureClipboard( isPrepend, count, ... )
@@ -143,17 +148,8 @@ function! s:CaptureClipboard( isPrepend, count, ... )
 	return
     endif
 
-    let l:isSameLine = (a:count == 0)
-
-    if a:count > 0
-	" Go to specified line number. (Will probably mostly used with
-	" :$CaptureClipboard to append to the end of the buffer.) 
-	execute a:count
-    endif
-
-    if a:0
-	let l:delimiter = s:GetDelimiter(a:1)
-    endif
+    let l:delimiter = (a:0 ? s:GetDelimiter(a:1) : "\n")
+    let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')
 
     call s:Message()
     let l:captureCount = 0
@@ -165,13 +161,10 @@ function! s:CaptureClipboard( isPrepend, count, ... )
     endif
 
     let l:temp = @*
-    while @* !=# 'EOF'
+    while ! (@* ==# 'EOF' || (a:count && l:captureCount == a:count))
 	if l:temp !=# @*
 	    let l:temp = @*
-	    if exists('l:delimiter')
-		call s:Insert(l:delimiter, a:isPrepend, l:isSameLine)
-	    endif
-	    call s:Insert(l:temp, a:isPrepend, l:isSameLine)
+	    call s:Insert(l:temp, (l:captureCount == 0 ? l:firstDelimiter : l:delimiter), a:isPrepend)
 	    let l:captureCount += 1
 
 	    silent! write
@@ -185,5 +178,5 @@ function! s:CaptureClipboard( isPrepend, count, ... )
     call s:EndMessage(l:captureCount)
 endfunction 
 
-command! -bang -range=-1 -nargs=? CaptureClipboard call <SID>CaptureClipboard(<bang>0, <count>, <f-args>)
+command! -bang -count -nargs=? CaptureClipboard call <SID>CaptureClipboard(<bang>0, <count>, <f-args>)
 
