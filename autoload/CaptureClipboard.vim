@@ -17,8 +17,8 @@ function! s:Message( ... )
     if &title
 	if ! a:0
 	    " Initial invocation: Save original title and set up autocmd to
-	    " restore it in case the capturing is not stopped via "EOF", but by
-	    " aborting the command. 
+	    " restore it in case the capturing is not stopped via the
+	    " end-of-capture marker, but by aborting the command. 
 	    let s:save_titlestring = &titlestring
 	    augroup CaptureClipboard
 		au!
@@ -35,7 +35,10 @@ function! s:Message( ... )
 	redraw  " This is necessary to update the title. 
     endif
 
-    echo printf('Capturing clipboard changes %sto current buffer. To stop, press <CTRL-C> or copy "EOF". ', (a:0 ? '(' . a:1 . ') ' : ''))
+    echo printf('Capturing clipboard changes %sto current buffer. To stop, press <CTRL-C> or copy "%s". ',
+    \	(a:0 ? '(' . a:1 . ') ' : ''),
+    \	g:CaptureClipboard_EndOfCaptureMarker
+    \)
 endfunction
 function! s:EndMessage( count )
     redraw
@@ -49,10 +52,10 @@ function! s:EndMessage( count )
 endfunction
 
 function! s:GetClipboard()
-    execute 'return @' . g:CaptureClipboard_register
+    execute 'return @' . g:CaptureClipboard_Register
 endfunction
 function! s:ClearClipboard()
-    execute 'let @' . g:CaptureClipboard_register . ' = ""'
+    execute 'let @' . g:CaptureClipboard_Register . ' = ""'
 endfunction
 
 function! s:GetDelimiter( argument )
@@ -95,14 +98,14 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     call s:Message()
     let l:captureCount = 0
 
-    if s:GetClipboard() ==# 'EOF'
-	" Remove the EOF marker (from a previous :CaptureClipboard run) from the
+    if s:GetClipboard() ==# g:CaptureClipboard_EndOfCaptureMarker
+	" Remove the end-of-capture marker (from a previous :CaptureClipboard run) from the
 	" clipboard, or else the capture won't even start. 
 	call s:ClearClipboard()
     endif
 
     let l:temp = s:GetClipboard()
-    while ! (s:GetClipboard() ==# 'EOF' || (a:count && l:captureCount == a:count))
+    while ! (s:GetClipboard() ==# g:CaptureClipboard_EndOfCaptureMarker || (a:count && l:captureCount == a:count))
 	if l:temp !=# s:GetClipboard()
 	    let l:temp = s:GetClipboard()
 	    call s:Insert(
