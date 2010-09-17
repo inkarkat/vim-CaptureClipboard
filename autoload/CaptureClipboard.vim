@@ -13,24 +13,32 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+function! s:PreCapture()
+    " Save original title.  
+    if &title
+	let s:save_titlestring = &titlestring
+    endif
+
+    " Set up autocmd to restore settings in case the capturing is not stopped
+    " via the end-of-capture marker, but by aborting the command. 
+    augroup CaptureClipboard
+	au!
+	" Note: The CursorMoved event is triggered immediately after a CTRL-C if
+	" text has been inserted; the other events are not triggered inside the
+	" loop. If no text has been captured, we try to restore the settings
+	" when the cursor moves or the window changes. 
+	au CursorHold,CursorMoved,WinLeave * call s:PostCapture() | autocmd! CaptureClipboard
+    augroup END
+endfunction
+function! s:PostCapture()
+    if exists('s:save_titlestring')
+	let &titlestring = s:save_titlestring
+	unlet s:save_titlestring
+    endif
+endfunction
+
 function! s:Message( ... )
     if &title
-	if ! a:0
-	    " Initial invocation: Save original title and set up autocmd to
-	    " restore it in case the capturing is not stopped via the
-	    " end-of-capture marker, but by aborting the command. 
-	    let s:save_titlestring = &titlestring
-	    augroup CaptureClipboard
-		au!
-		" Note: The CursorMoved event is triggered immediately after a
-		" CTRL-C if text has been inserted; the other events are not
-		" triggered inside the loop. If no text has been captured, we
-		" try to restore the title when the cursor moves or the window
-		" changes. 
-		au CursorHold,CursorMoved,WinLeave * let &titlestring = s:save_titlestring | autocmd! CaptureClipboard
-	    augroup END
-	endif
-
 	let &titlestring = (a:0 ? a:1 . printf(' clip%s...', (a:1 == 1 ? '' : 's')) : 'Capturing...') . ' - %{v:servername}'
 	redraw  " This is necessary to update the title. 
     endif
@@ -43,12 +51,6 @@ endfunction
 function! s:EndMessage( count )
     redraw
     echo printf('Captured %s clipboard changes. ', (a:count > 0 ? a:count : 'no'))
-
-    if &title
-	autocmd! CaptureClipboard
-	let &titlestring = s:save_titlestring
-	unlet s:save_titlestring
-    endif
 endfunction
 
 function! s:GetClipboard()
@@ -95,6 +97,7 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     let l:delimiter = (a:0 ? s:GetDelimiter(a:1) : "\n")
     let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')
 
+    call s:PreCapture()
     call s:Message()
     let l:captureCount = 0
 
@@ -124,6 +127,8 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     endwhile
 
     call s:EndMessage(l:captureCount)
+    autocmd! CaptureClipboard
+    call s:PostCapture()
 endfunction 
 
 let &cpo = s:save_cpo
