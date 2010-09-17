@@ -3,16 +3,20 @@
 " DESCRIPTION:
 " USAGE:
 ":[count]CaptureClipboard[!] [{delimiter}]
+":[count]CaptureClipboardReverse[!] [{delimiter}]
 "			Monitors the clipboard for changes and inserts any
 "			change of clipboard contents into the current buffer (in
 "			new lines, optionally delimited by {delimiter}). 
 "			To stop, press <CTRL-C> or copy "EOF". If [count] is
 "			given, the capture stops after [count] captures. 
-"			If [!] is given, changes are prepended, reverting the
-"			insertion order. Normally, changes are appended to the
-"			current or given [line].
+"
+"			If [!] is given, whitespace (including new lines) is
+"			trimmed from the beginning and end of each capture. 
 "			Use :$|CaptureClipboard to append at the end of the
 "			current buffer. 
+"			With :CaptureClipboardReverse, changes are prepended,
+"			reverting the insertion order. Normally, changes are
+"			appended to the current or given [line].
 "
 "			{delimiter} is evaluated as an expression if it is
 "			(single- or double-)quoted, or contains backslashes. 
@@ -44,6 +48,15 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de> 
 "
 " REVISION	DATE		REMARKS 
+"	005	17-Sep-2010	ENH: Insertion of newline is now entirely
+"				controlled by {separator}, not by
+"				:0CaptureClipboard. 
+"				ENH: [bang] now turns on trimming of whitespace,
+"				(seldomly used) prepending is now separate
+"				:CaptureClipboardReverse command. 
+"				ENH: {separator} is not inserted before first
+"				capture, only between subsequent ones. 
+"				ENH: Can limit number of captures via [count]. 
 "	004	26-Feb-2010	Now using correct plural for the title message. 
 "	003	24-Feb-2010	ENH: Showing capture status in 'titlestring' to
 "				indicate the blocking polling mode and also any
@@ -78,6 +91,9 @@ if exists('g:loaded_CaptureClipboard') || (v:version < 700)
     finish
 endif
 let g:loaded_CaptureClipboard = 1
+
+let s:save_cpo = &cpo
+set cpo&vim
 
 function! s:Message( ... )
     if &title
@@ -139,7 +155,7 @@ function! s:Insert( text, delimiter, isPrepend )
 	execute "normal! \"=l:insertText\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
     endif
 endfunction
-function! s:CaptureClipboard( isPrepend, count, ... )
+function! s:CaptureClipboard( isPrepend, isTrim, count, ... )
     if ! &l:modifiable
 	let v:errmsg = "E21: Cannot make changes, 'modifiable' is off"
 	echohl ErrorMsg
@@ -164,7 +180,11 @@ function! s:CaptureClipboard( isPrepend, count, ... )
     while ! (@* ==# 'EOF' || (a:count && l:captureCount == a:count))
 	if l:temp !=# @*
 	    let l:temp = @*
-	    call s:Insert(l:temp, (l:captureCount == 0 ? l:firstDelimiter : l:delimiter), a:isPrepend)
+	    call s:Insert(
+	    \	(a:isTrim ? substitute(l:temp, '^\_s*\(.\{-}\)\_s*$', '\1', 'g') : l:temp),
+	    \	(l:captureCount == 0 ? l:firstDelimiter : l:delimiter),
+	    \	a:isPrepend
+	    \)
 	    let l:captureCount += 1
 
 	    silent! write
@@ -178,5 +198,9 @@ function! s:CaptureClipboard( isPrepend, count, ... )
     call s:EndMessage(l:captureCount)
 endfunction 
 
-command! -bang -count -nargs=? CaptureClipboard call <SID>CaptureClipboard(<bang>0, <count>, <f-args>)
+command! -bang -count -nargs=? CaptureClipboard		call <SID>CaptureClipboard(0, <bang>0, <count>, <f-args>)
+command! -bang -count -nargs=? CaptureClipboardReverse	call <SID>CaptureClipboard(1, <bang>0, <count>, <f-args>)
 
+let &cpo = s:save_cpo
+unlet s:save_cpo
+" vim: set sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
