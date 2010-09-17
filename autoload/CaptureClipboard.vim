@@ -48,6 +48,13 @@ function! s:EndMessage( count )
     endif
 endfunction
 
+function! s:GetClipboard()
+    execute 'return @' . g:CaptureClipboard_register
+endfunction
+function! s:ClearClipboard()
+    execute 'let @' . g:CaptureClipboard_register . ' = ""'
+endfunction
+
 function! s:GetDelimiter( argument )
     try
 	if a:argument =~# '^\([''"]\).*\1$' 
@@ -88,16 +95,16 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     call s:Message()
     let l:captureCount = 0
 
-    if @* ==# 'EOF'
+    if s:GetClipboard() ==# 'EOF'
 	" Remove the EOF marker (from a previous :CaptureClipboard run) from the
 	" clipboard, or else the capture won't even start. 
-	let @* = ''
+	call s:ClearClipboard()
     endif
 
-    let l:temp = @*
-    while ! (@* ==# 'EOF' || (a:count && l:captureCount == a:count))
-	if l:temp !=# @*
-	    let l:temp = @*
+    let l:temp = s:GetClipboard()
+    while ! (s:GetClipboard() ==# 'EOF' || (a:count && l:captureCount == a:count))
+	if l:temp !=# s:GetClipboard()
+	    let l:temp = s:GetClipboard()
 	    call s:Insert(
 	    \	(a:isTrim ? substitute(l:temp, '^\_s*\(.\{-}\)\_s*$', '\1', 'g') : l:temp),
 	    \	(l:captureCount == 0 ? l:firstDelimiter : l:delimiter),
