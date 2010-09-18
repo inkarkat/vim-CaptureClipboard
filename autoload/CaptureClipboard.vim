@@ -14,26 +14,35 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 function! s:PreCapture()
+    " Disable folding; it may obscure what's being captured. 
+    let s:save_foldenable = &foldenable
+    set nofoldenable
+
     " Save original title.  
     if &title
 	let s:save_titlestring = &titlestring
     endif
-
+    
     " Set up autocmd to restore settings in case the capturing is not stopped
     " via the end-of-capture marker, but by aborting the command. 
     augroup CaptureClipboard
-	au!
+	autocmd!
 	" Note: The CursorMoved event is triggered immediately after a CTRL-C if
 	" text has been inserted; the other events are not triggered inside the
 	" loop. If no text has been captured, we try to restore the settings
 	" when the cursor moves or the window changes. 
-	au CursorHold,CursorMoved,WinLeave * call s:PostCapture() | autocmd! CaptureClipboard
+	autocmd CursorHold,CursorMoved,WinLeave * call s:PostCapture() | autocmd! CaptureClipboard
     augroup END
 endfunction
 function! s:PostCapture()
     if exists('s:save_titlestring')
 	let &titlestring = s:save_titlestring
 	unlet s:save_titlestring
+    endif
+
+    if exists('s:save_foldenable')
+	let &foldenable = s:save_foldenable
+	unlet s:save_foldenable
     endif
 endfunction
 
@@ -118,7 +127,10 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
 	    \)
 	    let l:captureCount += 1
 
-	    silent! write
+	    if g:CaptureClipboard_IsAutoSave
+		silent! noautocmd write
+	    endif
+
 	    redraw
 	    call s:Message(l:captureCount)
 	else
