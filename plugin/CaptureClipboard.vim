@@ -11,6 +11,13 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de> 
 "
 " REVISION	DATE		REMARKS 
+"   1.00.007	20-Sep-2010	Changed end-of-capture marker from "EOF" to ".";
+"				the former rarely exists in real life, so it's
+"				mostly useless functionality. A single dot
+"				character typically isn't contained in a
+"				capture, much more frequent in capture sources,
+"				and has some precedents, e.g. to end commit
+"				messages. 
 "   1.00.006	18-Sep-2010	Moved functions from plugin to separate autoload
 "				script.
 "				Made clipboard register configurable, so that
@@ -20,6 +27,7 @@
 "				Made auto-save feature configurable and turn it
 "				off by default; I typcally trust Vim to take
 "				care of my buffer contents. 
+"				Made default delimiter configurable. 
 "	005	17-Sep-2010	ENH: Insertion of newline is now entirely
 "				controlled by {separator}, not by
 "				:0CaptureClipboard. 
@@ -65,8 +73,12 @@ endif
 let g:loaded_CaptureClipboard = 1
 
 "- configuration --------------------------------------------------------------
+if ! exists('g:CaptureClipboard_DefaultDelimiter')
+    let g:CaptureClipboard_DefaultDelimiter = "\n"
+endif
+
 if ! exists('g:CaptureClipboard_EndOfCaptureMarker')
-    let g:CaptureClipboard_EndOfCaptureMarker = 'EOF'
+    let g:CaptureClipboard_EndOfCaptureMarker = '.'
 endif
 
 if ! exists('g:CaptureClipboard_IsAutoSave')
