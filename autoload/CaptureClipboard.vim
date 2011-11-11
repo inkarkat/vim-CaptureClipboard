@@ -54,7 +54,7 @@ function! s:Message( ... )
 
     echo printf('Capturing clipboard changes %sto current buffer. To stop, press <CTRL-C> or copy "%s". ',
     \	(a:0 ? '(' . a:1 . ') ' : ''),
-    \	g:CaptureClipboard_EndOfCaptureMarker
+    \	strtrans(g:CaptureClipboard_EndOfCaptureMarker)
     \)
 endfunction
 function! s:EndMessage( count )
@@ -103,7 +103,7 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
 	return
     endif
 
-    let l:delimiter = (a:0 ? s:GetDelimiter(a:1) : "\n")
+    let l:delimiter = (a:0 ? s:GetDelimiter(a:1) : g:CaptureClipboard_DefaultDelimiter)
     let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')
 
     call s:PreCapture()
