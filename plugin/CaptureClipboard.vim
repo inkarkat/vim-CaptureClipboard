@@ -93,4 +93,4 @@ endif
 command! -bang -count -nargs=? CaptureClipboard		call CaptureClipboard#CaptureClipboard(0, <bang>0, <count>, <f-args>)
 command! -bang -count -nargs=? CaptureClipboardReverse	call CaptureClipboard#CaptureClipboard(1, <bang>0, <count>, <f-args>)
 
-" vim: set sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
+" vim: set ts=8 sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
