@@ -1,14 +1,15 @@
 " CaptureClipboard.vim: Append system clipboard changes to current buffer.
 "
 " DEPENDENCIES:
-"   - ingocmdargs.vim autoload script
+"   - ingo/cmdargs.vim autoload script
 "
-" Copyright: (C) 2010-2012 Ingo Karkat
+" Copyright: (C) 2010-2013 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.003	21-Feb-2013	Use ingo-library.
 "   1.11.002	25-Nov-2012	Implement check for no-modifiable buffer via
 "				noop-modification instead of checking for
 "				'modifiable'; this also handles the read-only
@@ -86,7 +87,7 @@ function! s:Insert( text, delimiter, isPrepend )
     endif
 endfunction
 function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
-    let l:delimiter = (a:0 ? ingocmdargs#GetStringExpr(a:1) : g:CaptureClipboard_DefaultDelimiter)
+    let l:delimiter = (a:0 ? ingo#cmdargs#GetStringExpr(a:1) : g:CaptureClipboard_DefaultDelimiter)
     let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')
 
     call s:PreCapture()
