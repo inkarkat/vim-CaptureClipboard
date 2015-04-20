@@ -94,8 +94,14 @@ function! s:Insert( text, isPrepend )
 endfunction
 function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     if a:0 && a:1 =~# '\r'
-	let [l:prefix, l:suffix] = map(split(a:1, '\r')[0:1], 'ingo#cmdargs#GetStringExpr(v:val)')
-	let [l:firstPrefix, l:firstSuffix] = [l:prefix, l:suffix]
+	let l:results = map(split(a:1, '\r'), 'ingo#cmdargs#GetStringExpr(v:val)')
+	if len(l:results) > 2
+	    let [l:prefix, l:suffix] = l:results[1:2]
+	    let [l:firstPrefix, l:firstSuffix] = [l:results[0], l:suffix]
+	else
+	    let [l:prefix, l:suffix] = l:results[0:1]
+	    let [l:firstPrefix, l:firstSuffix] = [l:prefix, l:suffix]
+	endif
     else
 	let l:delimiter = (a:0 ? ingo#cmdargs#GetStringExpr(a:1) : g:CaptureClipboard_DefaultDelimiter)
 	let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')   " When {delimiter} contains a newline character, the first capture will already start on a new line.
