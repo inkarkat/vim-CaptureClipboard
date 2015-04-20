@@ -2,6 +2,7 @@
 "
 " DEPENDENCIES:
 "   - ingo/cmdargs.vim autoload script
+"   - ingo/str.vim autoload script
 "
 " Copyright: (C) 2010-2013 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
@@ -9,6 +10,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.004	19-Jun-2013	Use ingo#str#Trim().
 "   1.12.003	21-Feb-2013	Use ingo-library.
 "   1.11.002	25-Nov-2012	Implement check for no-modifiable buffer via
 "				noop-modification instead of checking for
@@ -105,7 +107,7 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
 	if l:temp !=# s:GetClipboard()
 	    let l:temp = s:GetClipboard()
 	    call s:Insert(
-	    \	(a:isTrim ? substitute(l:temp, '^\_s*\(.\{-}\)\_s*$', '\1', 'g') : l:temp),
+	    \	(a:isTrim ? ingo#str#Trim(l:temp) : l:temp),
 	    \	(l:captureCount == 0 ? l:firstDelimiter : l:delimiter),
 	    \	a:isPrepend
 	    \)
