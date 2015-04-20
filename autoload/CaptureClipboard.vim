@@ -2,14 +2,19 @@
 "
 " DEPENDENCIES:
 "   - ingo/cmdargs.vim autoload script
+"   - ingo/lines.vim autoload script
 "   - ingo/str.vim autoload script
 "
-" Copyright: (C) 2010-2013 Ingo Karkat
+" Copyright: (C) 2010-2015 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.20.005	21-Apr-2015	Use ingo#lines#PutWrapper() to avoid clobbering
+"				the expression register.
+"				ENH: Support {prefix}^M{suffix} alternative to
+"				{delimiter}.
 "   1.12.004	19-Jun-2013	Use ingo#str#Trim().
 "   1.12.003	21-Feb-2013	Use ingo-library.
 "   1.11.002	25-Nov-2012	Implement check for no-modifiable buffer via
@@ -79,18 +84,24 @@ function! s:ClearClipboard()
     execute 'let @' . g:CaptureClipboard_Register . ' = ""'
 endfunction
 
-function! s:Insert( text, delimiter, isPrepend )
-    let l:insertText = (a:isPrepend ? a:text . a:delimiter : a:delimiter . a:text)
-    if l:insertText =~# (a:isPrepend ? '\n$' : '^\n')
-	let l:insertText = (a:isPrepend ? strpart(l:insertText, 0, strlen(l:insertText) - 1) : strpart(l:insertText, 1))
-	execute 'put' . (a:isPrepend ? '!' : '') '=l:insertText'
+function! s:Insert( text, isPrepend )
+    if a:text =~# (a:isPrepend ? '\n$' : '^\n')
+	let l:insertText = (a:isPrepend ? strpart(a:text, 0, strlen(a:text) - 1) : strpart(a:text, 1))
+	call ingo#lines#PutWrapper('.', 'put' . (a:isPrepend ? '!' : ''), l:insertText)
     else
-	execute "normal! \"=l:insertText\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
+	execute "normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
     endif
 endfunction
 function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
-    let l:delimiter = (a:0 ? ingo#cmdargs#GetStringExpr(a:1) : g:CaptureClipboard_DefaultDelimiter)
-    let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')
+    if a:0 && a:1 =~# '\r'
+	let [l:prefix, l:suffix] = map(split(a:1, '\r')[0:1], 'ingo#cmdargs#GetStringExpr(v:val)')
+	let [l:firstPrefix, l:firstSuffix] = [l:prefix, l:suffix]
+    else
+	let l:delimiter = (a:0 ? ingo#cmdargs#GetStringExpr(a:1) : g:CaptureClipboard_DefaultDelimiter)
+	let l:firstDelimiter = (l:delimiter =~# '\n' ? "\n" : '')   " When {delimiter} contains a newline character, the first capture will already start on a new line.
+	let [l:prefix, l:suffix] = (a:isPrepend ? ['', l:delimiter] : [l:delimiter, ''])
+	let [l:firstPrefix, l:firstSuffix] = (a:isPrepend ? [l:firstDelimiter, ''] : ['', l:firstDelimiter])
+    endif
 
     call s:PreCapture()
     call s:Message()
@@ -106,9 +117,11 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     while ! (s:GetClipboard() ==# g:CaptureClipboard_EndOfCaptureMarker || (a:count && l:captureCount == a:count))
 	if l:temp !=# s:GetClipboard()
 	    let l:temp = s:GetClipboard()
+	    let l:text = (a:isTrim ? ingo#str#Trim(l:temp) : l:temp)
 	    call s:Insert(
-	    \	(a:isTrim ? ingo#str#Trim(l:temp) : l:temp),
-	    \	(l:captureCount == 0 ? l:firstDelimiter : l:delimiter),
+	    \	(l:captureCount == 0 ? l:firstPrefix : l:prefix) .
+	    \	    l:text .
+	    \	    (l:captureCount == 0 ? l:firstSuffix : l:suffix),
 	    \	a:isPrepend
 	    \)
 	    let l:captureCount += 1
