@@ -26,8 +26,8 @@ more, and can completely focus on text collection via CTRL-C, CTRL-C, ...
 ==============================================================================
 USAGE						      *CaptureClipboard-usage*
 				*:CaptureClipboard* *:CaptureClipboardReverse*
-:[count]CaptureClipboard[!] [{delimiter}|{prefix}^M{suffix}]
-:[count]CaptureClipboardReverse[!] [{delimiter}|{prefix}^M{suffix}]
+:[count]CaptureClipboard[!] [{delimiter}|[{first-prefix}^M]{prefix}^M{suffix}]
+:[count]CaptureClipboardReverse[!] [{delimiter}|[{first-prefix}^M]{prefix}^M{suffix}]
 			Monitors the clipboard for changes and inserts any
 			change of clipboard contents into the current buffer
 			(in new lines, or, if given, delimited by {delimiter},
