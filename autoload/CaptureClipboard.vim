@@ -2,6 +2,7 @@
 "
 " DEPENDENCIES:
 "   - ingo/cmdargs.vim autoload script
+"   - ingo/err.vim autoload script
 "   - ingo/lines.vim autoload script
 "   - ingo/str.vim autoload script
 "
@@ -13,8 +14,9 @@
 " REVISION	DATE		REMARKS
 "   1.20.005	21-Apr-2015	Use ingo#lines#PutWrapper() to avoid clobbering
 "				the expression register.
-"				ENH: Support {prefix}^M{suffix} alternative to
-"				{delimiter}.
+"				ENH: Support {prefix}^M{suffix} and
+"				{first-prefix}^M{prefix}^M{delimiter}^M{suffix}
+"				alternatives to the simplistic {delimiter}.
 "   1.12.004	19-Jun-2013	Use ingo#str#Trim().
 "   1.12.003	21-Feb-2013	Use ingo-library.
 "   1.11.002	25-Nov-2012	Implement check for no-modifiable buffer via
@@ -95,12 +97,18 @@ endfunction
 function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     if a:0 && a:1 =~# '\r'
 	let l:results = map(split(a:1, '\r'), 'ingo#cmdargs#GetStringExpr(v:val)')
-	if len(l:results) > 2
-	    let [l:prefix, l:suffix] = l:results[1:2]
-	    let [l:firstPrefix, l:firstSuffix] = [l:results[0], l:suffix]
-	else
-	    let [l:prefix, l:suffix] = l:results[0:1]
+	if len(l:results) == 2
+	    let [l:prefix, l:suffix] = l:results
 	    let [l:firstPrefix, l:firstSuffix] = [l:prefix, l:suffix]
+	elseif len(l:results) == 3
+	    let [l:prefix, l:suffix] = (a:isPrepend ? [l:results[0], l:results[2] . l:results[1]] : [l:results[1] . l:results[0], l:results[2]])
+	    let [l:firstPrefix, l:firstSuffix] = [l:results[0], l:results[2]]
+	elseif len(l:results) == 4
+	    let [l:prefix, l:suffix] = (a:isPrepend ? [l:results[1], l:results[3] . l:results[2]] : [l:results[2] . l:results[1], l:results[3]])
+	    let [l:firstPrefix, l:firstSuffix] = [l:results[0], l:results[3]]
+	else
+	    call ingo#err#Set('Additional argument(s): ' . join(l:results[4:], '^M'))
+	    return 0
 	endif
     else
 	let l:delimiter = (a:0 ? ingo#cmdargs#GetStringExpr(a:1) : g:CaptureClipboard_DefaultDelimiter)
@@ -146,6 +154,7 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     call s:EndMessage(l:captureCount)
     autocmd! CaptureClipboard
     call s:PostCapture()
+    return 1
 endfunction
 
 let &cpo = s:save_cpo
