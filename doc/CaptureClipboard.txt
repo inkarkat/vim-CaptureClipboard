@@ -26,12 +26,15 @@ more, and can completely focus on text collection via CTRL-C, CTRL-C, ...
 ==============================================================================
 USAGE						      *CaptureClipboard-usage*
 				*:CaptureClipboard* *:CaptureClipboardReverse*
-:[count]CaptureClipboard[!] [{delimiter}|[{first-prefix}^M]{prefix}^M{suffix}]
-:[count]CaptureClipboardReverse[!] [{delimiter}|[{first-prefix}^M]{prefix}^M{suffix}]
+:[count]CaptureClipboard[!] {delimiter}
+:[count]CaptureClipboard[!] {prefix}^M{suffix}
+:[count]CaptureClipboard[!] {prefix}^M{delimiter}^M{suffix}
+:[count]CaptureClipboard[!] {first-prefix}^M{prefix}^M{delimiter}^M{suffix}
+:[count]CaptureClipboardReverse[!] {...}
 			Monitors the clipboard for changes and inserts any
 			change of clipboard contents into the current buffer
 			(in new lines, or, if given, delimited by {delimiter},
-			or with {prefix} before and {suffix} after).
+			and with {prefix} before and {suffix} after).
 			To stop, press <CTRL-C> or copy a literal dot (".") to
 			the clipboard. If [count] is given, the capture stops
 			after [count] captures.
@@ -122,7 +125,9 @@ HISTORY						    *CaptureClipboard-history*
 
 1.20	RELEASEME
 - Use ingo#lines#PutWrapper() to avoid clobbering the expression register.
-- ENH: Support {prefix}^M{suffix} alternative to {delimiter}.
+- ENH: Support {prefix}^M{suffix} and
+  {first-prefix}^M{prefix}^M{delimiter}^M{suffix} alternatives to the
+  simplistic {delimiter}.
   *** You need to update to ingo-library (vimscript #4433) version 1.004! ***
 
 1.11	30-Dec-2012
