@@ -48,9 +48,8 @@ USAGE						      *CaptureClipboard-usage*
 			Use :$|CaptureClipboard to append to the end of the
 			current buffer.
 
-			{delimiter}, {prefix}, and {suffix} are evaluated as
-			expression(s) if each is (single- or double-)quoted,
-			or contains backslashes.
+			{delimiter} is evaluated as an expression if it is
+			(single- or double-) quoted, or contains backslashes.
 			The default {delimiter} is "\n"; each capture is
 			placed on a new line. Use '' to place everything next
 			to each other, ' ' to put a space character in
@@ -58,6 +57,8 @@ USAGE						      *CaptureClipboard-usage*
 			between captures. When {delimiter} contains a newline
 			character, the first capture will already start on a
 			new line.
+			Backslash-escaped characters (like \n) are also
+			supported in {prefix} and {suffix}.
 
 								  *i_CTRL-R_?*
 CTRL-R ?		Wait for one capture from the clipboard and insert it
@@ -77,7 +78,7 @@ To uninstall, use the |:RmVimball| command.
 DEPENDENCIES				       *CaptureClipboard-dependencies*
 
 - Requires Vim 7.0 or higher.
-- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.004 or
+- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.024 or
   higher.
 
 ==============================================================================
@@ -128,7 +129,7 @@ HISTORY						    *CaptureClipboard-history*
 - ENH: Support {prefix}^M{suffix} and
   {first-prefix}^M{prefix}^M{delimiter}^M{suffix} alternatives to the
   simplistic {delimiter}.
-  *** You need to update to ingo-library (vimscript #4433) version 1.004! ***
+  *** You need to update to ingo-library (vimscript #4433) version 1.024! ***
 
 1.11	30-Dec-2012
 Implement check for no-modifiable buffer via noop-modification instead of
