@@ -124,12 +124,13 @@ IDEAS						      *CaptureClipboard-ideas*
 ==============================================================================
 HISTORY						    *CaptureClipboard-history*
 
-1.20	RELEASEME
+1.20	23-Apr-2015
 - Use ingo#lines#PutWrapper() to avoid clobbering the expression register.
 - ENH: Support {prefix}^M{suffix} and
   {first-prefix}^M{prefix}^M{delimiter}^M{suffix} alternatives to the
   simplistic {delimiter}.
-  *** You need to update to ingo-library (vimscript #4433) version 1.024! ***
+  *** You need to separately install ingo-library (vimscript #4433) version
+  1.024 (or higher)! ***
 
 1.11	30-Dec-2012
 Implement check for no-modifiable buffer via noop-modification instead of
