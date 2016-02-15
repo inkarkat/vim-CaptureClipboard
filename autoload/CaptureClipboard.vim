@@ -12,6 +12,11 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.20.006	22-Apr-2015	Switch to ingo#cmdargs#GetUnescapedExpr() for ^M
+"				arguments; the quoted string expressions are not
+"				necessary there, an empty element can be
+"				represented by ^M^M.
+"				FIX: Need {keepempty} argument for split().
 "   1.20.005	21-Apr-2015	Use ingo#lines#PutWrapper() to avoid clobbering
 "				the expression register.
 "				ENH: Support {prefix}^M{suffix} and
@@ -96,7 +101,7 @@ function! s:Insert( text, isPrepend )
 endfunction
 function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     if a:0 && a:1 =~# '\r'
-	let l:results = map(split(a:1, '\r'), 'ingo#cmdargs#GetStringExpr(v:val)')
+	let l:results = map(split(a:1, '\r', 1), 'ingo#cmdargs#GetUnescapedExpr(v:val)')
 	if len(l:results) == 2
 	    let [l:prefix, l:suffix] = l:results
 	    let [l:firstPrefix, l:firstSuffix] = [l:prefix, l:suffix]
