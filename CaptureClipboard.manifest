@@ -1,4 +1,3 @@
-autoload/ingocmdargs.vim
 autoload/CaptureClipboard.vim
 plugin/CaptureClipboard.vim
 doc/CaptureClipboard.txt
