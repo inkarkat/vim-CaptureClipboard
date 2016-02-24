@@ -5,13 +5,17 @@
 "   - CaptureClipboard.vim autoload script
 "   - ingo/err.vim autoload script
 
-" Copyright: (C) 2010-2015 Ingo Karkat
+" Copyright: (C) 2010-2016 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Original Autor: Marian Csontos
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.21.012	16-Feb-2016	Refactoring: Pass register name to
+"				CaptureClipboard#CaptureClipboard(). Default to
+"				"+ on Linux; add :CaptureSelection variant for
+"				"*, there.
 "   1.20.011	21-Apr-2015	Add error handling via ingo/err.vim.
 "   1.11.010	28-Dec-2012	Minor: Correct lnum for no-modifiable buffer
 "				check.
@@ -96,14 +100,19 @@ if ! exists('g:CaptureClipboard_IsAutoSave')
 endif
 
 if ! exists('g:CaptureClipboard_Register')
-    let g:CaptureClipboard_Register = '*'
+    let g:CaptureClipboard_Register = (ingo#os#IsWindows() ? '*' : '+')
 endif
 
 
 "- commands -------------------------------------------------------------------
 
-command! -bang -count -nargs=? CaptureClipboard		call setline('.', getline('.')) | if ! CaptureClipboard#CaptureClipboard(0, <bang>0, <count>, <f-args>) | echoerr ingo#err#Get() | endif
-command! -bang -count -nargs=? CaptureClipboardReverse	call setline('.', getline('.')) | if ! CaptureClipboard#CaptureClipboard(1, <bang>0, <count>, <f-args>) | echoerr ingo#err#Get() | endif
+command! -bang -count -nargs=? CaptureClipboard		call setline('.', getline('.')) | if ! CaptureClipboard#CaptureClipboard(g:CaptureClipboard_Register, 0, <bang>0, <count>, <f-args>) | echoerr ingo#err#Get() | endif
+command! -bang -count -nargs=? CaptureClipboardReverse	call setline('.', getline('.')) | if ! CaptureClipboard#CaptureClipboard(g:CaptureClipboard_Register, 1, <bang>0, <count>, <f-args>) | echoerr ingo#err#Get() | endif
+
+if ! ingo#os#IsWindows()
+command! -bang -count -nargs=? CaptureSelection		call setline('.', getline('.')) | if ! CaptureClipboard#CaptureClipboard('*'                        , 0, <bang>0, <count>, <f-args>) | echoerr ingo#err#Get() | endif
+command! -bang -count -nargs=? CaptureSelectionReverse	call setline('.', getline('.')) | if ! CaptureClipboard#CaptureClipboard('*'                        , 1, <bang>0, <count>, <f-args>) | echoerr ingo#err#Get() | endif
+endif
 
 
 "- mappings --------------------------------------------------------------------
