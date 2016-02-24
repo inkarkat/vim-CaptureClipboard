@@ -59,6 +59,8 @@ USAGE						      *CaptureClipboard-usage*
 			new line.
 			Backslash-escaped characters (like \n) are also
 			supported in {prefix} and {suffix}.
+:CaptureSelection [...]	Variant (on Linux) that uses the selection
+			(|quotestar|) instead of the system clipboard.
 
 								  *i_CTRL-R_?*
 CTRL-R ?		Wait for one capture from the clipboard and insert it
@@ -124,6 +126,9 @@ IDEAS						      *CaptureClipboard-ideas*
 ==============================================================================
 HISTORY						    *CaptureClipboard-history*
 
+1.21	RELEASEME
+- Default to "+ on Linux; add :CaptureSelection variant for "*, there.
+
 1.20	23-Apr-2015
 - Use ingo#lines#PutWrapper() to avoid clobbering the expression register.
 - ENH: Support {prefix}^M{suffix} and
@@ -150,7 +155,7 @@ Copied original function TrackClipboard() by from vimtip #1370, now residing
 at http://vim.wikia.com/wiki/Tracking_clipboard_changes
 
 ==============================================================================
-Copyright: (C) 2010-2015 Ingo Karkat
+Copyright: (C) 2010-2016 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>
