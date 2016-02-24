@@ -6,12 +6,17 @@
 "   - ingo/lines.vim autoload script
 "   - ingo/str.vim autoload script
 "
-" Copyright: (C) 2010-2015 Ingo Karkat
+" Copyright: (C) 2010-2016 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.21.007	16-Feb-2016	Refactoring: Pass register name to
+"				CaptureClipboard#CaptureClipboard() instead of
+"				using g:CaptureClipboard_Register directly.
+"				Use getreg() / setreg() for register access;
+"				it's easier than :execute.
 "   1.20.006	22-Apr-2015	Switch to ingo#cmdargs#GetUnescapedExpr() for ^M
 "				arguments; the quoted string expressions are not
 "				necessary there, an empty element can be
@@ -84,11 +89,11 @@ function! s:EndMessage( count )
     echo printf('Captured %s clipboard changes. ', (a:count > 0 ? a:count : 'no'))
 endfunction
 
-function! s:GetClipboard()
-    execute 'return @' . g:CaptureClipboard_Register
+function! s:GetClipboard( register )
+    return getreg(a:register)
 endfunction
-function! s:ClearClipboard()
-    execute 'let @' . g:CaptureClipboard_Register . ' = ""'
+function! s:ClearClipboard( register )
+    call setreg(a:register, '')
 endfunction
 
 function! s:Insert( text, isPrepend )
@@ -99,7 +104,7 @@ function! s:Insert( text, isPrepend )
 	execute "normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
     endif
 endfunction
-function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
+function! CaptureClipboard#CaptureClipboard( register, isPrepend, isTrim, count, ... )
     if a:0 && a:1 =~# '\r'
 	let l:results = map(split(a:1, '\r', 1), 'ingo#cmdargs#GetUnescapedExpr(v:val)')
 	if len(l:results) == 2
@@ -126,16 +131,16 @@ function! CaptureClipboard#CaptureClipboard( isPrepend, isTrim, count, ... )
     call s:Message()
     let l:captureCount = 0
 
-    if s:GetClipboard() ==# g:CaptureClipboard_EndOfCaptureMarker
+    if s:GetClipboard(a:register) ==# g:CaptureClipboard_EndOfCaptureMarker
 	" Remove the end-of-capture marker (from a previous :CaptureClipboard run) from the
 	" clipboard, or else the capture won't even start.
-	call s:ClearClipboard()
+	call s:ClearClipboard(a:register)
     endif
 
-    let l:temp = s:GetClipboard()
-    while ! (s:GetClipboard() ==# g:CaptureClipboard_EndOfCaptureMarker || (a:count && l:captureCount == a:count))
-	if l:temp !=# s:GetClipboard()
-	    let l:temp = s:GetClipboard()
+    let l:temp = s:GetClipboard(a:register)
+    while ! (s:GetClipboard(a:register) ==# g:CaptureClipboard_EndOfCaptureMarker || (a:count && l:captureCount == a:count))
+	if l:temp !=# s:GetClipboard(a:register)
+	    let l:temp = s:GetClipboard(a:register)
 	    let l:text = (a:isTrim ? ingo#str#Trim(l:temp) : l:temp)
 	    call s:Insert(
 	    \	(l:captureCount == 0 ? l:firstPrefix : l:prefix) .
