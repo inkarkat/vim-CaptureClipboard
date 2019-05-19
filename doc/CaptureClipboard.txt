@@ -69,10 +69,16 @@ CTRL-R ?		Wait for one capture from the clipboard and insert it
 ==============================================================================
 INSTALLATION				       *CaptureClipboard-installation*
 
-This script is packaged as a |vimball|. If you have the "gunzip" decompressor
-in your PATH, simply edit the *.vmb.gz package in Vim; otherwise, decompress
-the archive first, e.g. using WinZip. Inside Vim, install by sourcing the
-vimball or via the |:UseVimball| command. >
+The code is hosted in a Git repo at
+    https://github.com/inkarkat/vim-CaptureClipboard
+You can use your favorite plugin manager, or "git clone" into a directory used
+for Vim |packages|. Releases are on the "stable" branch, the latest unstable
+development snapshot on "master".
+
+This script is also packaged as a |vimball|. If you have the "gunzip"
+decompressor in your PATH, simply edit the *.vmb.gz package in Vim; otherwise,
+decompress the archive first, e.g. using WinZip. Inside Vim, install by
+sourcing the vimball or via the |:UseVimball| command. >
     vim CaptureClipboard*.vmb.gz
     :so %
 To uninstall, use the |:RmVimball| command.
@@ -123,6 +129,12 @@ TODO						       *CaptureClipboard-todo*
 
 IDEAS						      *CaptureClipboard-ideas*
 
+CONTRIBUTING					 *CaptureClipboard-contribute*
+
+Report any bugs, send patches, or suggest features via the issue tracker at
+https://github.com/inkarkat/vim-CaptureClipboard/issues or email (address
+below).
+
 ==============================================================================
 HISTORY						    *CaptureClipboard-history*
 
@@ -155,7 +167,7 @@ Copied original function TrackClipboard() by from vimtip #1370, now residing
 at http://vim.wikia.com/wiki/Tracking_clipboard_changes
 
 ==============================================================================
-Copyright: (C) 2010-2016 Ingo Karkat
+Copyright: (C) 2010-2019 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>
