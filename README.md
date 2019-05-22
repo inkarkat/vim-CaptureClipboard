@@ -122,8 +122,8 @@ below).
 HISTORY
 ------------------------------------------------------------------------------
 
-##### 1.21    RELEASEME
-- Default to "+ on Linux; add :CaptureSelection variant for "\*, there.
+##### 1.21    19-May-2019
+- Default to "+ on Linux; add :CaptureSelection variant for "\* there.
 
 ##### 1.20    23-Apr-2015
 - Use ingo#lines#PutWrapper() to avoid clobbering the expression register.
