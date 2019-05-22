@@ -1,42 +1,12 @@
 " CaptureClipboard.vim: Append system clipboard changes to current buffer.
 "
 " DEPENDENCIES:
-"   - ingo/cmdargs.vim autoload script
-"   - ingo/err.vim autoload script
-"   - ingo/lines.vim autoload script
-"   - ingo/str.vim autoload script
+"   - ingo-library.vim plugin
 "
-" Copyright: (C) 2010-2016 Ingo Karkat
+" Copyright: (C) 2010-2019 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
-"
-" REVISION	DATE		REMARKS
-"   1.21.007	16-Feb-2016	Refactoring: Pass register name to
-"				CaptureClipboard#CaptureClipboard() instead of
-"				using g:CaptureClipboard_Register directly.
-"				Use getreg() / setreg() for register access;
-"				it's easier than :execute.
-"   1.20.006	22-Apr-2015	Switch to ingo#cmdargs#GetUnescapedExpr() for ^M
-"				arguments; the quoted string expressions are not
-"				necessary there, an empty element can be
-"				represented by ^M^M.
-"				FIX: Need {keepempty} argument for split().
-"   1.20.005	21-Apr-2015	Use ingo#lines#PutWrapper() to avoid clobbering
-"				the expression register.
-"				ENH: Support {prefix}^M{suffix} and
-"				{first-prefix}^M{prefix}^M{delimiter}^M{suffix}
-"				alternatives to the simplistic {delimiter}.
-"   1.12.004	19-Jun-2013	Use ingo#str#Trim().
-"   1.12.003	21-Feb-2013	Use ingo-library.
-"   1.11.002	25-Nov-2012	Implement check for no-modifiable buffer via
-"				noop-modification instead of checking for
-"				'modifiable'; this also handles the read-only
-"				warning.
-"				Factor out s:GetDelimiter() as
-"				ingocmdargs#GetStringExpr() for re-use in other
-"				plugins.
-"   1.00.001	18-Sep-2010	file creation
 let s:save_cpo = &cpo
 set cpo&vim
 
