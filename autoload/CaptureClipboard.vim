@@ -70,9 +70,9 @@ endfunction
 function! s:Insert( text, isPrepend )
     if a:text =~# (a:isPrepend ? '\n$' : '^\n')
 	let l:insertText = (a:isPrepend ? strpart(a:text, 0, strlen(a:text) - 1) : strpart(a:text, 1))
-	call ingo#lines#PutWrapper('.', 'put' . (a:isPrepend ? '!' : ''), l:insertText)
+	silent call ingo#lines#PutWrapper('.', 'put' . (a:isPrepend ? '!' : ''), l:insertText)
     else
-	execute "normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
+	execute "silent normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
     endif
 endfunction
 function! CaptureClipboard#CaptureClipboard( register, isPrepend, isTrim, count, ... )
