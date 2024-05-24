@@ -122,6 +122,9 @@ below).
 HISTORY
 ------------------------------------------------------------------------------
 
+##### 1.22    RELEASEME
+- Suppress paste messages, no duplicate :redraw
+
 ##### 1.21    19-May-2019
 - Default to "+ on Linux; add :CaptureSelection variant for "\* there.
 
@@ -152,7 +155,7 @@ checking for 'modifiable'; this also handles the read-only warning.
 at http://vim.wikia.com/wiki/Tracking_clipboard_changes
 
 ------------------------------------------------------------------------------
-Copyright: (C) 2010-2019 Ingo Karkat -
+Copyright: (C) 2010-2024 Ingo Karkat -
 The [VIM LICENSE](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license) applies to this plugin.
 
 Maintainer:     Ingo Karkat &lt;ingo@karkat.de&gt;
