@@ -3,7 +3,7 @@
 " DEPENDENCIES:
 "   - ingo-library.vim plugin
 "
-" Copyright: (C) 2010-2019 Ingo Karkat
+" Copyright: (C) 2010-2024 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
@@ -46,8 +46,9 @@ endfunction
 function! s:Message( ... )
     if &title
 	let &titlestring = (a:0 ? a:1 . printf(' clip%s...', (a:1 == 1 ? '' : 's')) : 'Capturing...') . ' - %{v:servername}'
-	redraw  " This is necessary to update the title.
     endif
+
+    redraw  " Update the window with the pasted contents; this is also necessary to update the title.
 
     echo printf('Capturing clipboard changes %sto current buffer. To stop, press <CTRL-C> or copy "%s". ',
     \	(a:0 ? '(' . a:1 . ') ' : ''),
@@ -69,9 +70,9 @@ endfunction
 function! s:Insert( text, isPrepend )
     if a:text =~# (a:isPrepend ? '\n$' : '^\n')
 	let l:insertText = (a:isPrepend ? strpart(a:text, 0, strlen(a:text) - 1) : strpart(a:text, 1))
-	call ingo#lines#PutWrapper('.', 'put' . (a:isPrepend ? '!' : ''), l:insertText)
+	silent call ingo#lines#PutWrapper('.', 'put' . (a:isPrepend ? '!' : ''), l:insertText)
     else
-	execute "normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
+	execute "silent normal! \"=a:text\<CR>" . (a:isPrepend ? 'Pg`[' : 'pg`]')
     endif
 endfunction
 function! CaptureClipboard#CaptureClipboard( register, isPrepend, isTrim, count, ... )
@@ -124,7 +125,6 @@ function! CaptureClipboard#CaptureClipboard( register, isPrepend, isTrim, count,
 		silent! noautocmd write
 	    endif
 
-	    redraw
 	    call s:Message(l:captureCount)
 	else
 	    sleep 50ms
